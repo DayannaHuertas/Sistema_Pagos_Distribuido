@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plataforma de Pagos JDC</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0a0a0f;
+    --ink2: #3a3a4a;
+    --ink3: #7a7a8a;
+    --surface: #f7f6f2;
+    --card: #ffffff;
+    --border: rgba(10,10,15,0.10);
+    --border2: rgba(10,10,15,0.18);
+    --accent: #2563eb;
+    --accent2: #1d4ed8;
+    --success: #059669;
+    --success-bg: #ecfdf5;
+    --danger: #dc2626;
+    --danger-bg: #fef2f2;
+    --warning: #d97706;
+    --warning-bg: #fffbeb;
+    --gold: #f59e0b;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--surface);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* SIDEBAR */
+  .layout { display: flex; min-height: 100vh; }
+
+  .sidebar {
+    width: 260px;
+    background: var(--ink);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+    padding: 0;
+  }
+
+  .sidebar-brand {
+    padding: 28px 24px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    text-align: center;
+  }
+
+  .brand-logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+
+  .brand-icon {
+    width: 44px; height: 44px;
+    background: var(--accent);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 6px;
+  }
+
+  .brand-icon svg { width: 24px; height: 24px; fill: white; }
+
+  .brand-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+    color: white;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .brand-sub {
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    text-align: center;
+    margin-top: 4px;
+  }
+
+  .sidebar-nav { padding: 16px 12px; flex: 1; }
+
+  .nav-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,0.3);
+    padding: 8px 12px 6px;
+    font-weight: 500;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    color: rgba(255,255,255,0.6);
+    font-weight: 400;
+    transition: all 0.15s;
+    margin-bottom: 2px;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+  }
+
+  .nav-item:hover { background: rgba(255,255,255,0.08); color: white; }
+  .nav-item.active { background: rgba(37,99,235,0.25); color: white; }
+  .nav-item.active .nav-icon { color: #60a5fa; }
+
+  .nav-icon { font-size: 18px; width: 20px; text-align: center; }
+
+  .sidebar-footer {
+    padding: 16px 24px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .status-dot {
+    display: inline-block;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #22c55e;
+    margin-right: 6px;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .status-text { font-size: 12px; color: rgba(255,255,255,0.5); }
+
+  /* MAIN */
+  .main {
+    margin-left: 260px;
+    flex: 1;
+    min-height: 100vh;
+  }
+
+  .topbar {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .page-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+
+  .badge-server {
+    font-size: 12px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+
+  .content { padding: 32px; }
+
+  /* PAGES */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* METRIC CARDS */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .metric-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .metric-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 14px 14px 0 0;
+  }
+
+  .metric-card.blue::before { background: var(--accent); }
+  .metric-card.green::before { background: var(--success); }
+  .metric-card.red::before { background: var(--danger); }
+  .metric-card.gold::before { background: var(--gold); }
+
+  .metric-label { font-size: 12px; color: var(--ink3); font-weight: 500; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .metric-value { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 700; letter-spacing: -1px; line-height: 1; }
+  .metric-sub { font-size: 12px; color: var(--ink3); margin-top: 6px; }
+
+  /* CARDS */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .card-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .card-body { padding: 24px; }
+
+  /* FORM */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+
+  label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink2);
+  }
+
+  input, select, textarea {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    padding: 10px 14px;
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    background: var(--card);
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+  }
+
+  /* BUTTONS */
+  .btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+  }
+
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-primary:active { transform: scale(0.98); }
+
+  .btn-primary:disabled {
+    background: #93c5fd;
+    cursor: not-allowed;
+  }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--ink2);
+    border: 1px solid var(--border2);
+  }
+
+  .btn-outline:hover { background: var(--surface); }
+
+  .btn-success { background: var(--success); color: white; }
+  .btn-danger { background: var(--danger); color: white; }
+
+  /* TABLE */
+  table { width: 100%; border-collapse: collapse; }
+
+  th {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--ink3);
+    padding: 10px 16px;
+    text-align: left;
+    background: #fafaf8;
+    border-bottom: 1px solid var(--border);
+  }
+
+  td {
+    padding: 14px 16px;
+    font-size: 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafaf8; }
+
+  /* BADGES */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .badge-success { background: var(--success-bg); color: var(--success); }
+  .badge-danger { background: var(--danger-bg); color: var(--danger); }
+  .badge-warning { background: var(--warning-bg); color: var(--warning); }
+  .badge-info { background: #eff6ff; color: #1d4ed8; }
+  .badge-gray { background: #f3f4f6; color: #4b5563; }
+
+  /* RESULT BOX */
+  .result-box {
+    border-radius: 10px;
+    padding: 20px;
+    font-size: 13px;
+    margin-top: 20px;
+    display: none;
+  }
+
+  .result-box.success { background: var(--success-bg); border: 1px solid #a7f3d0; color: #065f46; }
+  .result-box.error { background: var(--danger-bg); border: 1px solid #fecaca; color: #991b1b; }
+  .result-box.show { display: block; }
+
+  .result-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+  .result-item { display: flex; flex-direction: column; gap: 2px; }
+  .result-item-label { font-size: 11px; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.5px; }
+  .result-item-value { font-weight: 500; font-size: 14px; word-break: break-all; }
+
+  /* SPINNER */
+  .spinner {
+    display: inline-block;
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* SALDO CARD */
+  .saldo-card {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #2563eb 100%);
+    border-radius: 16px;
+    padding: 28px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .saldo-card::after {
+    content: '';
+    position: absolute;
+    right: -30px; top: -30px;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+  }
+
+  .saldo-card::before {
+    content: '';
+    position: absolute;
+    right: 40px; bottom: -50px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+  }
+
+  .saldo-label { font-size: 12px; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .saldo-amount { font-family: 'Syne', sans-serif; font-size: 40px; font-weight: 800; letter-spacing: -2px; }
+  .saldo-currency { font-size: 18px; font-weight: 400; opacity: 0.7; margin-left: 4px; }
+
+  /* PASOS SAGA */
+  .saga-steps {
+    display: flex;
+    gap: 0;
+    margin: 20px 0;
+  }
+
+  .saga-step {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+  }
+
+  .saga-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 18px;
+    left: 50%;
+    right: -50%;
+    height: 2px;
+    background: var(--border2);
+    z-index: 0;
+  }
+
+  .saga-step.done:not(:last-child)::after { background: var(--success); }
+
+  .step-circle {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    background: var(--surface);
+    border: 2px solid var(--border2);
+    z-index: 1;
+    margin-bottom: 8px;
+  }
+
+  .saga-step.done .step-circle { background: var(--success); border-color: var(--success); color: white; }
+  .saga-step.active .step-circle { background: var(--accent); border-color: var(--accent); color: white; }
+  .saga-step.failed .step-circle { background: var(--danger); border-color: var(--danger); color: white; }
+
+  .step-label { font-size: 11px; color: var(--ink3); text-align: center; max-width: 80px; }
+  .saga-step.done .step-label { color: var(--success); font-weight: 500; }
+
+  /* MONTO DISPLAY */
+  .monto-preview {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 10px;
+    padding: 14px 18px;
+    text-align: center;
+    margin-top: 8px;
+  }
+
+  .monto-preview-label { font-size: 11px; color: #1d4ed8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .monto-preview-value { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 700; color: #1e40af; }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--ink3);
+  }
+
+  .empty-state-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-state-text { font-size: 14px; }
+
+  /* GRID 2COL */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+
+  /* CHIP */
+  .chip {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--ink2);
+  }
+
+  /* ALERT */
+  .alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .alert-info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+  .alert-warning { background: var(--warning-bg); border: 1px solid #fcd34d; color: #92400e; }
+
+  /* LOADING OVERLAY */
+  .loading-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10,10,15,0.3);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .loading-overlay.show { display: flex; }
+
+  .loading-card {
+    background: white;
+    border-radius: 16px;
+    padding: 32px 40px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  }
+
+  .loading-spinner {
+    width: 40px; height: 40px;
+    border: 3px solid #e5e7eb;
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin: 0 auto 16px;
+  }
+
+  .loading-text { font-size: 15px; font-weight: 500; color: var(--ink2); }
+  .loading-sub { font-size: 13px; color: var(--ink3); margin-top: 4px; }
+
+  /* SAGA VISUAL */
+  .saga-flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 20px 0;
+  }
+
+  .saga-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+  }
+
+  .saga-node-box {
+    width: 100%;
+    max-width: 110px;
+    padding: 10px 8px;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1.5px solid var(--border2);
+    background: var(--card);
+  }
+
+  .saga-node-box.completado { background: var(--success-bg); border-color: #a7f3d0; color: #065f46; }
+  .saga-node-box.fallido { background: var(--danger-bg); border-color: #fecaca; color: #991b1b; }
+  .saga-node-box.pendiente { background: #fafaf8; color: var(--ink3); }
+
+  .saga-arrow {
+    color: var(--ink3);
+    font-size: 18px;
+    flex-shrink: 0;
+    padding: 0 4px;
+  }
+
+  /* RESPONSIVE tweaks */
+  @media (max-width: 1200px) {
+    .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-card">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Procesando pago...</div>
+    <div class="loading-sub">Ejecutando Saga distribuida</div>
+  </div>
+</div>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+        </div>
+        <span class="brand-name">Plataforma de Pagos JDC</span>
+      </div>
+      <div class="brand-sub">Pagos Distribuidos</div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-label">Principal</div>
+      <button class="nav-item active" onclick="showPage('dashboard')">
+        <span class="nav-icon">⬡</span> Dashboard
+      </button>
+      <button class="nav-item" onclick="showPage('pagar')">
+        <span class="nav-icon">↗</span> Nuevo Pago
+      </button>
+      <button class="nav-item" onclick="showPage('transacciones')">
+        <span class="nav-icon">≡</span> Transacciones
+      </button>
+
+      <div class="nav-label" style="margin-top:16px">Gestión</div>
+      <button class="nav-item" onclick="showPage('cuentas')">
+        <span class="nav-icon">◈</span> Cuentas
+      </button>
+      <button class="nav-item" onclick="showPage('saga')">
+        <span class="nav-icon">⬢</span> Monitor Saga
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div><span class="status-dot"></span><span class="status-text">Gateway activo · puerto 3000</span></div>
+      <div style="margin-top:6px"><span class="status-text" style="opacity:0.4">Spring Boot · puerto 8084</span></div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+    <div class="topbar">
+      <div class="page-title" id="pageTitle">Dashboard</div>
+      <div class="topbar-right">
+        <span class="badge-server">Node.js Gateway</span>
+        <button class="btn btn-outline" style="font-size:13px;padding:7px 14px" onclick="refreshData()">↻ Actualizar</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ===== DASHBOARD ===== -->
+      <div class="page active" id="page-dashboard">
+        <div class="metrics-grid">
+          <div class="metric-card blue">
+            <div class="metric-label">Total Transacciones</div>
+            <div class="metric-value" id="m-total">—</div>
+            <div class="metric-sub">Registradas en el sistema</div>
+          </div>
+          <div class="metric-card green">
+            <div class="metric-label">Completadas</div>
+            <div class="metric-value" id="m-completadas">—</div>
+            <div class="metric-sub">Pagos exitosos</div>
+          </div>
+          <div class="metric-card red">
+            <div class="metric-label">Fallidas</div>
+            <div class="metric-value" id="m-fallidas">—</div>
+            <div class="metric-sub">Saldo insuficiente u otros</div>
+          </div>
+          <div class="metric-card gold">
+            <div class="metric-label">Compensadas</div>
+            <div class="metric-value" id="m-compensadas">—</div>
+            <div class="metric-sub">Revertidas por Saga</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Últimas transacciones</span>
+              <button class="btn btn-outline" style="font-size:12px;padding:6px 12px" onclick="showPage('transacciones')">Ver todas →</button>
+            </div>
+            <div id="dashboard-table">
+              <div class="empty-state">
+                <div class="empty-state-icon">⟳</div>
+                <div class="empty-state-text">Cargando...</div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="card" style="margin-bottom:16px">
+              <div class="card-header"><span class="card-title">Acción rápida</span></div>
+              <div class="card-body">
+                <div class="alert alert-info" style="margin-bottom:16px">
+                  <span>ℹ</span>
+                  <span>El sistema usa el patrón <strong>Saga</strong> para garantizar consistencia en pagos distribuidos.</span>
+                </div>
+                <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="showPage('pagar')">
+                  ↗ Realizar nuevo pago
+                </button>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header"><span class="card-title">Estado del sistema</span></div>
+              <div class="card-body">
+                <div style="display:flex;flex-direction:column;gap:12px">
+                  <div style="display:flex;justify-content:space-between;align-items:center">
+                    <span style="font-size:14px;color:var(--ink2)">Node.js Gateway</span>
+                    <span class="badge badge-success" id="gateway-status">● Activo</span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;align-items:center">
+                    <span style="font-size:14px;color:var(--ink2)">Spring Boot API</span>
+                    <span class="badge badge-success" id="api-status">● Activo</span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;align-items:center">
+                    <span style="font-size:14px;color:var(--ink2)">PostgreSQL</span>
+                    <span class="badge badge-success">● Conectado</span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;align-items:center">
+                    <span style="font-size:14px;color:var(--ink2)">Patrón Saga</span>
+                    <span class="badge badge-info">● 4 pasos</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== NUEVO PAGO ===== -->
+      <div class="page" id="page-pagar">
+        <div class="grid-2" style="align-items:start">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Datos del pago</span>
+            </div>
+            <div class="card-body">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Cuenta Origen (ID)</label>
+                  <input type="number" id="p-origen" value="1" min="1" placeholder="Ej: 1" oninput="updateMontoPreview()">
+                </div>
+                <div class="form-group">
+                  <label>Cuenta Destino (ID)</label>
+                  <input type="number" id="p-destino" value="2" min="1" placeholder="Ej: 2" oninput="updateMontoPreview()">
+                </div>
+                <div class="form-group">
+                  <label>Monto (COP)</label>
+                  <input type="number" id="p-monto" value="100000" min="1" placeholder="0" oninput="updateMontoPreview()">
+                </div>
+                <div class="form-group">
+                  <label>Región (ID)</label>
+                  <input type="number" id="p-region" value="1" min="1">
+                </div>
+                <div class="form-group full">
+                  <label>Descripción</label>
+                  <input type="text" id="p-desc" value="Pago de prueba" placeholder="Descripción del pago">
+                </div>
+              </div>
+
+              <div class="monto-preview">
+                <div class="monto-preview-label">Monto a transferir</div>
+                <div class="monto-preview-value" id="monto-display">$100,000 COP</div>
+              </div>
+
+              <button class="btn btn-primary" id="btn-pagar" style="width:100%;justify-content:center;margin-top:16px;padding:13px" onclick="realizarPago()">
+                ↗ Ejecutar pago
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <div class="card" style="margin-bottom:16px">
+              <div class="card-header"><span class="card-title">Flujo Saga</span></div>
+              <div class="card-body" style="padding:16px 20px">
+                <div class="saga-flow">
+                  <div class="saga-node">
+                    <div class="saga-node-box" id="saga-v">Validar Saldo</div>
+                  </div>
+                  <div class="saga-arrow">→</div>
+                  <div class="saga-node">
+                    <div class="saga-node-box" id="saga-d">Debitar</div>
+                  </div>
+                  <div class="saga-arrow">→</div>
+                  <div class="saga-node">
+                    <div class="saga-node-box" id="saga-a">Acreditar</div>
+                  </div>
+                  <div class="saga-arrow">→</div>
+                  <div class="saga-node">
+                    <div class="saga-node-box" id="saga-n">Notificar</div>
+                  </div>
+                </div>
+                <p style="font-size:12px;color:var(--ink3);text-align:center">Los pasos se ejecutan en orden. Si falla, se compensa automáticamente.</p>
+              </div>
+            </div>
+
+            <div id="pago-result"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== TRANSACCIONES ===== -->
+      <div class="page" id="page-transacciones">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Historial de transacciones</span>
+            <button class="btn btn-outline" style="font-size:13px;padding:7px 14px" onclick="loadTransacciones()">↻ Actualizar</button>
+          </div>
+          <div id="tabla-transacciones">
+            <div class="empty-state">
+              <div class="empty-state-icon">⟳</div>
+              <div class="empty-state-text">Cargando transacciones...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== CUENTAS ===== -->
+      <div class="page" id="page-cuentas">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Consultar saldo</span>
+            </div>
+            <div class="card-body">
+              <div style="display:flex;gap:10px">
+                <input type="number" id="c-id" value="1" min="1" style="flex:1" placeholder="ID de cuenta">
+                <button class="btn btn-primary" onclick="consultarSaldo()">Consultar</button>
+              </div>
+              <div id="saldo-result" style="margin-top:16px"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><span class="card-title">Referencia rápida</span></div>
+            <div class="card-body">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Titular</th>
+                    <th>Moneda</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td><span class="chip">1</span></td><td>Ana García</td><td>COP</td></tr>
+                  <tr><td><span class="chip">2</span></td><td>Carlos López</td><td>COP</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== MONITOR SAGA ===== -->
+      <div class="page" id="page-saga">
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header">
+            <span class="card-title">Consultar pasos de Saga</span>
+          </div>
+          <div class="card-body">
+            <div style="display:flex;gap:10px">
+              <input type="number" id="saga-tid" value="1" min="1" style="flex:1" placeholder="ID de transacción">
+              <button class="btn btn-primary" onclick="consultarSagaPasos()">Ver pasos</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="saga-result">
+          <div class="alert alert-info">
+            <span>ℹ</span>
+            <span>Ingresa el ID de una transacción para ver los pasos del patrón Saga ejecutados.</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+const GATEWAY = 'http://localhost:3000';
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  const titles = { dashboard:'Dashboard', pagar:'Nuevo Pago', transacciones:'Transacciones', cuentas:'Cuentas', saga:'Monitor Saga' };
+  document.getElementById('pageTitle').textContent = titles[name] || name;
+  const btns = document.querySelectorAll('.nav-item');
+  btns.forEach(b => { if(b.textContent.toLowerCase().includes(titles[name].toLowerCase().split(' ')[0])) b.classList.add('active'); });
+  if(name === 'transacciones') loadTransacciones();
+  if(name === 'dashboard') loadDashboard();
+}
+
+function formatCOP(n) {
+  return '$' + Number(n).toLocaleString('es-CO') + ' COP';
+}
+
+function updateMontoPreview() {
+  const m = document.getElementById('p-monto').value;
+  document.getElementById('monto-display').textContent = m ? formatCOP(m) : '$0 COP';
+}
+
+async function loadDashboard() {
+  try {
+    const res = await fetch(GATEWAY + '/gateway/transacciones');
+    if(!res.ok) throw new Error();
+    const data = await res.json();
+    const txs = data.transacciones || data || [];
+    const completadas = txs.filter(t => t.estado === 'COMPLETADA').length;
+    const fallidas = txs.filter(t => t.estado === 'FALLIDA').length;
+    const compensadas = txs.filter(t => t.estado === 'COMPENSADA').length;
+    document.getElementById('m-total').textContent = txs.length;
+    document.getElementById('m-completadas').textContent = completadas;
+    document.getElementById('m-fallidas').textContent = fallidas;
+    document.getElementById('m-compensadas').textContent = compensadas;
+
+    const recientes = txs.slice(-5).reverse();
+    const tbody = recientes.map(t => `
+      <tr>
+        <td><span class="chip">#${t.id}</span></td>
+        <td style="font-size:12px;color:var(--ink3);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.referencia ? t.referencia.substring(0,12)+'...' : '—'}</td>
+        <td>${formatCOP(t.monto)}</td>
+        <td>${estadoBadge(t.estado)}</td>
+      </tr>
+    `).join('');
+
+    document.getElementById('dashboard-table').innerHTML = `
+      <table>
+        <thead><tr><th>ID</th><th>Referencia</th><th>Monto</th><th>Estado</th></tr></thead>
+        <tbody>${tbody || '<tr><td colspan="4" style="text-align:center;color:var(--ink3)">Sin transacciones</td></tr>'}</tbody>
+      </table>`;
+  } catch(e) {
+    document.getElementById('m-total').textContent = '—';
+    document.getElementById('gateway-status').className = 'badge badge-danger';
+    document.getElementById('gateway-status').textContent = '● Inactivo';
+    document.getElementById('api-status').className = 'badge badge-warning';
+    document.getElementById('api-status').textContent = '⚠ Verificar';
+    document.getElementById('dashboard-table').innerHTML = `<div class="empty-state"><div class="empty-state-text" style="color:var(--danger)">No se pudo conectar al gateway.<br>Verifica que Node.js esté corriendo en puerto 3000.</div></div>`;
+  }
+}
+
+function estadoBadge(estado) {
+  const map = {
+    COMPLETADA: 'badge-success',
+    FALLIDA: 'badge-danger',
+    COMPENSADA: 'badge-warning',
+    PROCESANDO: 'badge-info',
+    PENDIENTE: 'badge-gray'
+  };
+  return `<span class="badge ${map[estado] || 'badge-gray'}">${estado}</span>`;
+}
+
+async function loadTransacciones() {
+  document.getElementById('tabla-transacciones').innerHTML = `<div class="empty-state"><div class="empty-state-icon">⟳</div><div class="empty-state-text">Cargando...</div></div>`;
+  try {
+    const res = await fetch(GATEWAY + '/gateway/transacciones');
+    const data = await res.json();
+    const txs = (data.transacciones || data || []).reverse();
+    if(!txs.length) {
+      document.getElementById('tabla-transacciones').innerHTML = `<div class="empty-state"><div class="empty-state-icon">◌</div><div class="empty-state-text">No hay transacciones registradas</div></div>`;
+      return;
+    }
+    const rows = txs.map(t => `
+      <tr>
+        <td><span class="chip">#${t.id}</span></td>
+        <td style="font-family:monospace;font-size:12px;color:var(--ink3)">${t.referencia ? t.referencia.substring(0,18)+'...' : '—'}</td>
+        <td style="font-weight:500">${formatCOP(t.monto)}</td>
+        <td>${estadoBadge(t.estado)}</td>
+        <td style="font-size:12px;color:var(--ink3)">${t.creadoEn ? t.creadoEn.substring(0,16).replace('T',' ') : '—'}</td>
+        <td style="font-size:12px;color:var(--ink3)">${t.descripcion || '—'}</td>
+      </tr>
+    `).join('');
+    document.getElementById('tabla-transacciones').innerHTML = `
+      <table>
+        <thead><tr><th>ID</th><th>Referencia</th><th>Monto</th><th>Estado</th><th>Fecha</th><th>Descripción</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  } catch(e) {
+    document.getElementById('tabla-transacciones').innerHTML = `<div class="empty-state"><div class="empty-state-text" style="color:var(--danger)">Error al conectar con el servidor</div></div>`;
+  }
+}
+
+async function realizarPago() {
+  const origen = document.getElementById('p-origen').value;
+  const destino = document.getElementById('p-destino').value;
+  const monto = document.getElementById('p-monto').value;
+  const region = document.getElementById('p-region').value;
+  const desc = document.getElementById('p-desc').value;
+
+  if(!origen || !destino || !monto) {
+    alert('Completa todos los campos obligatorios');
+    return;
+  }
+
+  if(origen === destino) {
+    alert('La cuenta origen y destino no pueden ser la misma');
+    return;
+  }
+
+  const btn = document.getElementById('btn-pagar');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Procesando...';
+  document.getElementById('loadingOverlay').classList.add('show');
+
+  ['saga-v','saga-d','saga-a','saga-n'].forEach(id => {
+    document.getElementById(id).className = 'saga-node-box';
+  });
+
+  try {
+    const res = await fetch(GATEWAY + '/gateway/pagar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        cuentaOrigenId: parseInt(origen),
+        cuentaDestinoId: parseInt(destino),
+        monto: parseFloat(monto),
+        regionId: parseInt(region),
+        descripcion: desc
+      })
+    });
+
+    const data = await res.json();
+    const tx = data.transaccion;
+    const exitoso = tx && tx.estado === 'COMPLETADA';
+
+    if(exitoso) {
+      ['saga-v','saga-d','saga-a','saga-n'].forEach(id => {
+        document.getElementById(id).className = 'saga-node-box completado';
+      });
+    } else {
+      document.getElementById('saga-v').className = 'saga-node-box fallido';
+    }
+
+    document.getElementById('pago-result').innerHTML = `
+      <div class="result-box ${exitoso ? 'success' : 'error'} show">
+        <div class="result-title">${exitoso ? '✓ Pago completado exitosamente' : '✗ Pago fallido'}</div>
+        <div class="result-grid">
+          <div class="result-item">
+            <span class="result-item-label">Estado</span>
+            <span class="result-item-value">${tx ? tx.estado : 'ERROR'}</span>
+          </div>
+          <div class="result-item">
+            <span class="result-item-label">Monto</span>
+            <span class="result-item-value">${tx ? formatCOP(tx.monto) : '—'}</span>
+          </div>
+          <div class="result-item">
+            <span class="result-item-label">ID</span>
+            <span class="result-item-value">#${tx ? tx.id : '—'}</span>
+          </div>
+          <div class="result-item">
+            <span class="result-item-label">Referencia</span>
+            <span class="result-item-value">${tx && tx.referencia ? tx.referencia.substring(0,16)+'...' : '—'}</span>
+          </div>
+        </div>
+      </div>`;
+  } catch(e) {
+    document.getElementById('pago-result').innerHTML = `
+      <div class="result-box error show">
+        <div class="result-title">✗ Error de conexión</div>
+        <p>No se pudo conectar al gateway. Verifica que Node.js esté corriendo en el puerto 3000.</p>
+      </div>`;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '↗ Ejecutar pago';
+    document.getElementById('loadingOverlay').classList.remove('show');
+  }
+}
+
+async function consultarSaldo() {
+  const id = document.getElementById('c-id').value;
+  document.getElementById('saldo-result').innerHTML = '<p style="color:var(--ink3);font-size:14px">Consultando...</p>';
+  try {
+    const res = await fetch(`http://localhost:3000/gateway/cuentas/${id}/saldo`);
+    const data = await res.json();
+    const saldo = data.saldo !== undefined ? data.saldo : data;
+    document.getElementById('saldo-result').innerHTML = `
+      <div class="saldo-card">
+        <div class="saldo-label">Saldo disponible · Cuenta #${id}</div>
+        <div class="saldo-amount">$${Number(saldo).toLocaleString('es-CO')}<span class="saldo-currency">COP</span></div>
+      </div>`;
+  } catch(e) {
+    document.getElementById('saldo-result').innerHTML = `
+      <div class="result-box error show">
+        <div class="result-title">✗ Error</div>
+        <p>No se pudo consultar el saldo. Verifica el ID de cuenta.</p>
+      </div>`;
+  }
+}
+
+async function consultarSagaPasos() {
+  const id = document.getElementById('saga-tid').value;
+  document.getElementById('saga-result').innerHTML = '<p style="color:var(--ink3);font-size:14px;padding:16px">Consultando pasos...</p>';
+  try {
+    const res = await fetch(`http://localhost:3000/gateway/transacciones/${id}/pasos`);
+    const pasos = await res.json();
+    if(!pasos.length) {
+      document.getElementById('saga-result').innerHTML = `<div class="alert alert-warning"><span>⚠</span><span>No se encontraron pasos para la transacción #${id}</span></div>`;
+      return;
+    }
+    const estadoClase = { COMPLETADO:'badge-success', FALLIDO:'badge-danger', COMPENSADO:'badge-warning', EJECUTANDO:'badge-info', PENDIENTE:'badge-gray' };
+    const rows = pasos.map(p => `
+      <tr>
+        <td><span class="chip">#${p.id}</span></td>
+        <td style="font-weight:500">${p.paso}</td>
+        <td><span class="badge ${estadoClase[p.estado] || 'badge-gray'}">${p.estado}</span></td>
+        <td style="font-size:12px;color:var(--ink3)">${p.mensajeError || '—'}</td>
+        <td style="font-size:12px;color:var(--ink3)">${p.actualizadoEn ? p.actualizadoEn.substring(0,16).replace('T',' ') : '—'}</td>
+      </tr>`).join('');
+    document.getElementById('saga-result').innerHTML = `
+      <div class="card">
+        <div class="card-header"><span class="card-title">Pasos Saga — Transacción #${id}</span></div>
+        <table>
+          <thead><tr><th>ID</th><th>Paso</th><th>Estado</th><th>Error</th><th>Actualizado</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  } catch(e) {
+    document.getElementById('saga-result').innerHTML = `<div class="result-box error show"><div class="result-title">✗ Error</div><p>No se pudo consultar los pasos. Verifica el ID.</p></div>`;
+  }
+}
+
+function refreshData() {
+  const active = document.querySelector('.page.active').id.replace('page-','');
+  if(active === 'dashboard') loadDashboard();
+  if(active === 'transacciones') loadTransacciones();
+}
+
+loadDashboard();
+</script>
+</body>
+</html>
