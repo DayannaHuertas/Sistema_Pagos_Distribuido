@@ -566,7 +566,25 @@
   .loading-text { font-size: 15px; font-weight: 500; color: var(--ink2); }
   .loading-sub { font-size: 13px; color: var(--ink3); margin-top: 4px; }
 
-  /* SAGA VISUAL */
+  /* BOTONES MONTO CAJERO */
+  .btn-monto {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 14px 10px;
+    border-radius: 10px;
+    border: 2px solid var(--accent);
+    background: var(--card);
+    color: var(--accent);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+    letter-spacing: -0.3px;
+  }
+  .btn-monto:hover { background: var(--accent); color: white; transform: scale(1.02); }
+  .btn-monto.activo { background: var(--accent); color: white; box-shadow: 0 4px 12px rgba(37,99,235,0.3); }
+  .btn-otro { border-color: var(--ink3); color: var(--ink2); font-size: 13px; font-weight: 500; }
+  .btn-otro:hover { background: var(--surface); color: var(--ink); }
   .saga-flow {
     display: flex;
     align-items: center;
@@ -770,23 +788,33 @@
                   <label>Cuenta Destino (ID)</label>
                   <input type="number" id="p-destino" value="2" min="1" placeholder="Ej: 2" oninput="updateMontoPreview()">
                 </div>
-                <div class="form-group">
-                  <label>Monto (COP)</label>
-                  <input type="number" id="p-monto" value="100000" min="1" placeholder="0" oninput="updateMontoPreview()">
-                </div>
-                <div class="form-group">
-                  <label>Región (ID)</label>
-                  <input type="number" id="p-region" value="1" min="1">
-                </div>
                 <div class="form-group full">
                   <label>Descripción</label>
                   <input type="text" id="p-desc" value="Pago de prueba" placeholder="Descripción del pago">
                 </div>
               </div>
 
+              <!-- Botones de monto estilo cajero -->
+              <div style="margin-top:16px">
+                <label style="font-size:13px;font-weight:500;color:var(--ink2);display:block;margin-bottom:10px">Selecciona el monto</label>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+                  <button class="btn-monto" onclick="seleccionarMonto(50000)">$50.000</button>
+                  <button class="btn-monto" onclick="seleccionarMonto(100000)">$100.000</button>
+                  <button class="btn-monto" onclick="seleccionarMonto(200000)">$200.000</button>
+                  <button class="btn-monto" onclick="seleccionarMonto(500000)">$500.000</button>
+                  <button class="btn-monto" onclick="seleccionarMonto(1000000)">$1.000.000</button>
+                  <button class="btn-monto" onclick="seleccionarMonto(2000000)">$2.000.000</button>
+                  <button class="btn-monto" onclick="seleccionarMonto(5000000)">$5.000.000</button>
+                  <button class="btn-monto btn-otro" id="btn-otro-valor" onclick="toggleOtroValor()">✏ Otro valor</button>
+                </div>
+                <div id="otro-valor-box" style="display:none">
+                  <input type="number" id="p-monto" value="100000" min="1" placeholder="Ingresa el monto" oninput="updateMontoPreview()" style="width:100%">
+                </div>
+              </div>
+
               <div class="monto-preview">
                 <div class="monto-preview-label">Monto a transferir</div>
-                <div class="monto-preview-value" id="monto-display">$100,000 COP</div>
+                <div class="monto-preview-value" id="monto-display">$100.000 COP</div>
               </div>
 
               <button class="btn btn-primary" id="btn-pagar" style="width:100%;justify-content:center;margin-top:16px;padding:13px" onclick="realizarPago()">
@@ -843,36 +871,26 @@
 
       <!-- ===== CUENTAS ===== -->
       <div class="page" id="page-cuentas">
-        <div class="grid-2">
-          <div class="card">
-            <div class="card-header">
-              <span class="card-title">Consultar saldo</span>
-            </div>
-            <div class="card-body">
-              <div style="display:flex;gap:10px">
-                <input type="number" id="c-id" value="1" min="1" style="flex:1" placeholder="ID de cuenta">
-                <button class="btn btn-primary" onclick="consultarSaldo()">Consultar</button>
-              </div>
-              <div id="saldo-result" style="margin-top:16px"></div>
-            </div>
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header">
+            <span class="card-title">Consultar cuenta</span>
+            <button class="btn btn-outline" style="font-size:13px;padding:7px 14px" onclick="loadTodasCuentas()">↻ Ver todas</button>
           </div>
+          <div class="card-body">
+            <div style="display:flex;gap:10px">
+              <input type="number" id="c-id" value="1" min="1" style="flex:1" placeholder="ID de cuenta">
+              <button class="btn btn-primary" onclick="consultarSaldo()">Consultar</button>
+            </div>
+            <div id="saldo-result" style="margin-top:16px"></div>
+          </div>
+        </div>
 
-          <div class="card">
-            <div class="card-header"><span class="card-title">Referencia rápida</span></div>
-            <div class="card-body">
-              <table>
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Titular</th>
-                    <th>Moneda</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr><td><span class="chip">1</span></td><td>Ana García</td><td>COP</td></tr>
-                  <tr><td><span class="chip">2</span></td><td>Carlos López</td><td>COP</td></tr>
-                </tbody>
-              </table>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Todas las cuentas</span></div>
+          <div id="tabla-cuentas">
+            <div class="empty-state">
+              <div class="empty-state-icon">◌</div>
+              <div class="empty-state-text">Haz clic en "Ver todas" para cargar</div>
             </div>
           </div>
         </div>
@@ -882,7 +900,7 @@
       <div class="page" id="page-saga">
         <div class="card" style="margin-bottom:20px">
           <div class="card-header">
-            <span class="card-title">Consultar pasos de Saga</span>
+            <span class="card-title">Monitor Saga</span>
           </div>
           <div class="card-body">
             <div style="display:flex;gap:10px">
@@ -923,9 +941,32 @@ function formatCOP(n) {
   return '$' + Number(n).toLocaleString('es-CO') + ' COP';
 }
 
+let montoSeleccionado = 100000;
+
+function seleccionarMonto(monto) {
+  montoSeleccionado = monto;
+  document.querySelectorAll('.btn-monto').forEach(b => b.classList.remove('activo'));
+  event.target.classList.add('activo');
+  document.getElementById('otro-valor-box').style.display = 'none';
+  document.getElementById('monto-display').textContent = '$' + Number(monto).toLocaleString('es-CO') + ' COP';
+}
+
+function toggleOtroValor() {
+  const box = document.getElementById('otro-valor-box');
+  const visible = box.style.display !== 'none';
+  box.style.display = visible ? 'none' : 'block';
+  document.querySelectorAll('.btn-monto').forEach(b => b.classList.remove('activo'));
+  document.getElementById('btn-otro-valor').classList.add('activo');
+  if (!visible) {
+    document.getElementById('p-monto').focus();
+    montoSeleccionado = 0;
+  }
+}
+
 function updateMontoPreview() {
-  const m = document.getElementById('p-monto').value;
-  document.getElementById('monto-display').textContent = m ? formatCOP(m) : '$0 COP';
+  const m = document.getElementById('p-monto') ? document.getElementById('p-monto').value : montoSeleccionado;
+  montoSeleccionado = Number(m);
+  document.getElementById('monto-display').textContent = m ? '$' + Number(m).toLocaleString('es-CO') + ' COP' : '$0 COP';
 }
 
 async function loadDashboard() {
@@ -1011,12 +1052,13 @@ async function loadTransacciones() {
 async function realizarPago() {
   const origen = document.getElementById('p-origen').value;
   const destino = document.getElementById('p-destino').value;
-  const monto = document.getElementById('p-monto').value;
-  const region = document.getElementById('p-region').value;
+  const otroBox = document.getElementById('otro-valor-box');
+  const montoInput = document.getElementById('p-monto');
+  const monto = (otroBox && otroBox.style.display !== 'none' && montoInput && montoInput.value) ? Number(montoInput.value) : Number(montoSeleccionado);
   const desc = document.getElementById('p-desc').value;
 
-  if(!origen || !destino || !monto) {
-    alert('Completa todos los campos obligatorios');
+  if(!origen || !destino || !monto || monto <= 0) {
+    alert('Selecciona un monto y completa los campos');
     return;
   }
 
@@ -1041,9 +1083,9 @@ async function realizarPago() {
       body: JSON.stringify({
         cuentaOrigenId: parseInt(origen),
         cuentaDestinoId: parseInt(destino),
-        monto: parseFloat(monto),
-        regionId: parseInt(region),
-        descripcion: desc
+        monto: monto,
+        regionId: 1,
+        descripcion: desc || 'Pago desde interfaz JDC'
       })
     });
 
@@ -1098,20 +1140,51 @@ async function consultarSaldo() {
   const id = document.getElementById('c-id').value;
   document.getElementById('saldo-result').innerHTML = '<p style="color:var(--ink3);font-size:14px">Consultando...</p>';
   try {
-    const res = await fetch(`http://localhost:3000/gateway/cuentas/${id}/saldo`);
+    const res = await fetch(`http://localhost:3000/gateway/cuentas/${id}`);
     const data = await res.json();
-    const saldo = data.saldo !== undefined ? data.saldo : data;
+    if(data.error) throw new Error(data.error);
     document.getElementById('saldo-result').innerHTML = `
       <div class="saldo-card">
-        <div class="saldo-label">Saldo disponible · Cuenta #${id}</div>
-        <div class="saldo-amount">$${Number(saldo).toLocaleString('es-CO')}<span class="saldo-currency">COP</span></div>
+        <div class="saldo-label">Cuenta #${data.id} · ${data.activa ? 'Activa' : 'Inactiva'}</div>
+        <div style="font-size:18px;font-weight:600;margin-bottom:4px;opacity:0.9">${data.titular || 'Sin nombre'}</div>
+        <div style="font-size:13px;opacity:0.7;margin-bottom:12px">${data.email || ''} · ${data.region || ''}</div>
+        <div class="saldo-amount">$${Number(data.saldo).toLocaleString('es-CO')}<span class="saldo-currency">${data.moneda || 'COP'}</span></div>
       </div>`;
   } catch(e) {
     document.getElementById('saldo-result').innerHTML = `
       <div class="result-box error show">
         <div class="result-title">✗ Error</div>
-        <p>No se pudo consultar el saldo. Verifica el ID de cuenta.</p>
+        <p>No se pudo consultar la cuenta. Verifica el ID.</p>
       </div>`;
+  }
+}
+
+async function loadTodasCuentas() {
+  document.getElementById('tabla-cuentas').innerHTML = `<div class="empty-state"><div class="empty-state-icon">⟳</div><div class="empty-state-text">Cargando...</div></div>`;
+  try {
+    const res = await fetch('http://localhost:3000/gateway/cuentas');
+    const data = await res.json();
+    const cuentas = Array.isArray(data) ? data : [];
+    if(!cuentas.length) {
+      document.getElementById('tabla-cuentas').innerHTML = `<div class="empty-state"><div class="empty-state-text">No hay cuentas</div></div>`;
+      return;
+    }
+    const rows = cuentas.map(c => `
+      <tr>
+        <td><span class="chip">#${c.id}</span></td>
+        <td style="font-weight:500">${c.cliente ? c.cliente.nombre : '—'}</td>
+        <td style="font-size:12px;color:var(--ink3)">${c.cliente ? c.cliente.email : '—'}</td>
+        <td style="font-weight:500;color:var(--success)">$${Number(c.saldo).toLocaleString('es-CO')}</td>
+        <td>${c.moneda || 'COP'}</td>
+        <td><span class="badge ${c.activa ? 'badge-success' : 'badge-danger'}">${c.activa ? 'Activa' : 'Inactiva'}</span></td>
+      </tr>`).join('');
+    document.getElementById('tabla-cuentas').innerHTML = `
+      <table>
+        <thead><tr><th>ID</th><th>Titular</th><th>Email</th><th>Saldo</th><th>Moneda</th><th>Estado</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  } catch(e) {
+    document.getElementById('tabla-cuentas').innerHTML = `<div class="empty-state"><div class="empty-state-text" style="color:var(--danger)">Error al cargar cuentas</div></div>`;
   }
 }
 
@@ -1119,28 +1192,93 @@ async function consultarSagaPasos() {
   const id = document.getElementById('saga-tid').value;
   document.getElementById('saga-result').innerHTML = '<p style="color:var(--ink3);font-size:14px;padding:16px">Consultando pasos...</p>';
   try {
-    const res = await fetch(`http://localhost:3000/gateway/transacciones/${id}/pasos`);
-    const pasos = await res.json();
+    const [pasosRes, txsRes] = await Promise.all([
+      fetch(`http://localhost:3000/gateway/transacciones/${id}/pasos`),
+      fetch(`http://localhost:3000/gateway/transacciones`)
+    ]);
+    const pasos = await pasosRes.json();
+    const txsData = await txsRes.json();
+    const txs = txsData.transacciones || txsData || [];
+    const tx = txs.find(t => t.id == id);
+
     if(!pasos.length) {
       document.getElementById('saga-result').innerHTML = `<div class="alert alert-warning"><span>⚠</span><span>No se encontraron pasos para la transacción #${id}</span></div>`;
       return;
     }
-    const estadoClase = { COMPLETADO:'badge-success', FALLIDO:'badge-danger', COMPENSADO:'badge-warning', EJECUTANDO:'badge-info', PENDIENTE:'badge-gray' };
-    const rows = pasos.map(p => `
-      <tr>
-        <td><span class="chip">#${p.id}</span></td>
-        <td style="font-weight:500">${p.paso}</td>
-        <td><span class="badge ${estadoClase[p.estado] || 'badge-gray'}">${p.estado}</span></td>
-        <td style="font-size:12px;color:var(--ink3)">${p.mensajeError || '—'}</td>
-        <td style="font-size:12px;color:var(--ink3)">${p.actualizadoEn ? p.actualizadoEn.substring(0,16).replace('T',' ') : '—'}</td>
-      </tr>`).join('');
+
+    const ordenPasos = ['VALIDAR_SALDO','DEBITAR_ORIGEN','ACREDITAR_DESTINO','NOTIFICAR'];
+    const iconoPaso = { VALIDAR_SALDO:'✓', DEBITAR_ORIGEN:'↓', ACREDITAR_DESTINO:'↑', NOTIFICAR:'✉' };
+    const nombrePaso = { VALIDAR_SALDO:'Validar Saldo', DEBITAR_ORIGEN:'Debitar Origen', ACREDITAR_DESTINO:'Acreditar Destino', NOTIFICAR:'Notificar' };
+
+    const pasosPorNombre = {};
+    pasos.forEach(p => pasosPorNombre[p.paso] = p);
+
+    const stepsHTML = ordenPasos.map((nombre, i) => {
+      const paso = pasosPorNombre[nombre];
+      const estado = paso ? paso.estado : 'PENDIENTE';
+      const colorMap = {
+        COMPLETADO: { bg:'#ecfdf5', border:'#059669', text:'#065f46', circle:'#059669' },
+        FALLIDO:    { bg:'#fef2f2', border:'#dc2626', text:'#991b1b', circle:'#dc2626' },
+        COMPENSADO: { bg:'#fffbeb', border:'#d97706', text:'#92400e', circle:'#d97706' },
+        EJECUTANDO: { bg:'#eff6ff', border:'#2563eb', text:'#1e40af', circle:'#2563eb' },
+        PENDIENTE:  { bg:'#f9fafb', border:'#d1d5db', text:'#6b7280', circle:'#d1d5db' }
+      };
+      const c = colorMap[estado] || colorMap.PENDIENTE;
+      const errorMsg = paso && paso.mensajeError ? `<div style="font-size:11px;color:#dc2626;margin-top:4px">${paso.mensajeError}</div>` : '';
+      const conector = i < ordenPasos.length - 1 ? `<div style="flex:1;height:2px;background:${estado==='COMPLETADO'?'#059669':'#e5e7eb'};margin:0 4px;align-self:center;margin-top:-24px"></div>` : '';
+
+      return `
+        <div style="display:flex;flex-direction:column;align-items:center;flex:1">
+          <div style="width:48px;height:48px;border-radius:50%;background:${c.circle};display:flex;align-items:center;justify-content:center;font-size:18px;color:white;font-weight:700;margin-bottom:8px;z-index:1">
+            ${estado==='COMPLETADO'?'✓':estado==='FALLIDO'?'✗':estado==='COMPENSADO'?'↩':(i+1)}
+          </div>
+          <div style="background:${c.bg};border:1.5px solid ${c.border};border-radius:8px;padding:10px 8px;text-align:center;width:100%">
+            <div style="font-size:13px;font-weight:600;color:${c.text}">${nombrePaso[nombre]}</div>
+            <div style="font-size:11px;color:${c.text};opacity:0.8;margin-top:2px">${estado}</div>
+            ${errorMsg}
+          </div>
+        </div>
+        ${conector}`;
+    }).join('');
+
+    const estadoTx = tx ? tx.estado : '—';
+    const colorEstado = { COMPLETADA:'#059669', FALLIDA:'#dc2626', COMPENSADA:'#d97706', PROCESANDO:'#2563eb', PENDIENTE:'#6b7280' };
+    const txInfo = tx ? `
+      <div style="display:flex;gap:24px;flex-wrap:wrap">
+        <div><div style="font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:0.5px">Estado</div>
+          <div style="font-size:16px;font-weight:700;color:${colorEstado[estadoTx]||'#333'}">${estadoTx}</div></div>
+        <div><div style="font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:0.5px">Monto</div>
+          <div style="font-size:16px;font-weight:700">${formatCOP(tx.monto)}</div></div>
+        <div><div style="font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:0.5px">Fecha</div>
+          <div style="font-size:14px;font-weight:500">${tx.creadoEn?tx.creadoEn.substring(0,16).replace('T',' '):'—'}</div></div>
+        <div><div style="font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:0.5px">Descripción</div>
+          <div style="font-size:14px;font-weight:500">${tx.descripcion||'—'}</div></div>
+      </div>` : '';
+
     document.getElementById('saga-result').innerHTML = `
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-header"><span class="card-title">Transacción #${id}</span></div>
+        <div class="card-body">${txInfo}</div>
+      </div>
       <div class="card">
-        <div class="card-header"><span class="card-title">Pasos Saga — Transacción #${id}</span></div>
-        <table>
-          <thead><tr><th>ID</th><th>Paso</th><th>Estado</th><th>Error</th><th>Actualizado</th></tr></thead>
-          <tbody>${rows}</tbody>
-        </table>
+        <div class="card-header"><span class="card-title">Pasos del Saga</span></div>
+        <div class="card-body">
+          <div style="display:flex;align-items:flex-start;gap:0;margin-bottom:20px">
+            ${stepsHTML}
+          </div>
+          <table style="margin-top:8px">
+            <thead><tr><th>Paso</th><th>Estado</th><th>Error</th><th>Actualizado</th></tr></thead>
+            <tbody>
+              ${pasos.map(p => `
+                <tr>
+                  <td style="font-weight:500">${nombrePaso[p.paso]||p.paso}</td>
+                  <td><span class="badge ${p.estado==='COMPLETADO'?'badge-success':p.estado==='FALLIDO'?'badge-danger':p.estado==='COMPENSADO'?'badge-warning':'badge-info'}">${p.estado}</span></td>
+                  <td style="font-size:12px;color:var(--danger)">${p.mensajeError||'—'}</td>
+                  <td style="font-size:12px;color:var(--ink3)">${p.actualizadoEn?p.actualizadoEn.substring(0,16).replace('T',' '):'—'}</td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
       </div>`;
   } catch(e) {
     document.getElementById('saga-result').innerHTML = `<div class="result-box error show"><div class="result-title">✗ Error</div><p>No se pudo consultar los pasos. Verifica el ID.</p></div>`;

@@ -158,6 +158,43 @@ app.get('/gateway/cuentas/:id/saldo', async (req, res) => {
 });
 
 // ============================================================
+// GET /gateway/cuentas/:id — cuenta completa con titular
+// ============================================================
+app.get('/gateway/cuentas/:id', async (req, res) => {
+    try {
+        const [cuentaRes, saldoRes] = await Promise.all([
+            axios.get(`${SPRING_BOOT_URL}/api/cuentas/${req.params.id}`),
+            axios.get(`${SPRING_BOOT_URL}/api/cuentas/${req.params.id}/saldo`)
+        ]);
+        const cuenta = cuentaRes.data;
+        const saldo = saldoRes.data.saldo !== undefined ? saldoRes.data.saldo : saldoRes.data;
+        return res.status(200).json({
+            id: cuenta.id,
+            saldo: saldo,
+            moneda: cuenta.moneda || 'COP',
+            activa: cuenta.activa,
+            titular: cuenta.cliente ? cuenta.cliente.nombre : 'Sin nombre',
+            email: cuenta.cliente ? cuenta.cliente.email : '',
+            region: cuenta.cliente && cuenta.cliente.region ? cuenta.cliente.region.nombre : ''
+        });
+    } catch (error) {
+        return res.status(500).json({ error: 'Error al consultar cuenta' });
+    }
+});
+
+// ============================================================
+// GET /gateway/cuentas — todas las cuentas
+// ============================================================
+app.get('/gateway/cuentas', async (req, res) => {
+    try {
+        const response = await axios.get(`${SPRING_BOOT_URL}/api/cuentas`);
+        return res.status(200).json(response.data);
+    } catch (error) {
+        return res.status(500).json({ error: 'Error al obtener cuentas' });
+    }
+});
+
+// ============================================================
 // GET /gateway/eventos — Event Store (log inmutable)
 // ============================================================
 app.get('/gateway/eventos', (req, res) => {
