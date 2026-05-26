@@ -10,7 +10,7 @@
 
 ---
 
-## Descripción del Proyecto
+## Descripcion del proyecto 
 
 Este proyecto consiste en el diseño e implementación de una plataforma **e-commerce distribuida**, enfocada en el procesamiento seguro y consistente de transacciones de pago en entornos con múltiples servicios y regiones.  
 
