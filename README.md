@@ -4,9 +4,9 @@
 
 ## Integrantes
 - Leyber Ruiz  
-- Dayanna Huertas  
-- Yeison Romero  
-- Laura Porras  
+- Dayanna Huertas
+- Yeison Romero
+- Laura Porras 
 
 ---
 
